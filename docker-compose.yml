@@ -1,0 +1,34 @@
+version: "3"
+
+services:
+  db:
+    image: postgres:13.1-alpine
+    restart: always
+    hostname: db
+    env_file: .env
+    environment:
+      POSTGRES_DB: $DATABASE_NAME
+      POSTGRES_USER: $DATABASE_USERNAME
+      POSTGRES_PASSWORD: $DATABASE_PASSWORD
+    ports:
+      - "5432:5432"
+    volumes:
+      - .docker/database/data:/var/lib/postgresql/data
+      - .docker/database/scripts:/docker-entrypoint-initdb.d/
+    networks:
+      - backend
+
+  app:
+    image: golang:1.15.6-alpine3.12
+    env_file: .env
+    working_dir: /go/src/app
+    volumes:
+      - .:/go/src/app
+    ports:
+      - "8080:8080"
+    command: go run main.go
+    networks:
+      - backend
+
+networks:
+  backend:
